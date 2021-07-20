@@ -4,3 +4,4 @@ venv/
 logs/
 config/
 temp/
+configKR.json

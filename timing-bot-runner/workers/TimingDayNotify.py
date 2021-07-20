@@ -10,7 +10,10 @@ import timing_db_info
 from sqlalchemy import create_engine
 from datetime import datetime
 from datetime import timedelta
-import requests
+
+from slack import WebClient
+from slack.errors import SlackApiError
+import json
 
 
 class TimingDayNotify:
@@ -23,11 +26,14 @@ class TimingDayNotify:
         self.market_loc_cd = market_loc_cd
 
     def notify_user(self):
-        nowDate = datetime.now().date().strftime("%Y-%m-%d")
+        # nowDate = datetime.now().date().strftime("%Y-%m-%d")
+        nowDate = '2021-07-19'
         nowDate_7 = (datetime.now().date() - timedelta(days=7)).strftime('%Y-%m-%d')
 
         sql = f"""
-            SELECT a.analysis_date, a.market_cd, a.stock_cd, c.stock_nm, sum(a.buy) as buy_count
+            SELECT a.analysis_date, a.market_cd, a.stock_cd, c.stock_nm
+                , case when sum(a.buy) >= 8 then '강매수'
+                               else '매수' end as buy_opinion
                      FROM NOTIFY a join MARKET b
                                     ON a.market_cd = b.market_cd
                                    join STOCK_LIST c
@@ -48,7 +54,9 @@ class TimingDayNotify:
         print("매수 요약: ",notify_buy_summary)
 
         sql = f"""
-                    SELECT a.analysis_date, a.market_cd, a.stock_cd, c.stock_nm, sum(a.sell) as sell_count
+                    SELECT a.analysis_date, a.market_cd, a.stock_cd, c.stock_nm
+                        , case when sum(a.sell) >= 6 then '강매도'
+                               else '매도' end as sell_opinion
                              FROM NOTIFY a join MARKET b
                                             ON a.market_cd = b.market_cd
                                            join STOCK_LIST c
@@ -63,20 +71,108 @@ class TimingDayNotify:
                 """
 
         notify_sell_summary = pd.read_sql(sql, con=self.engine)
-        print("매도 요약: ",notify_sell_summary)
+       #  print("매도 요약: ",notify_sell_summary)
 
-        message = notify_sell_summary.to_string()
-        print(type (message))
-
-        data = {'Content-Type': 'application/x-www-form-urlencoded',
-                'token': timing_db_info.slack_token,
-                'channel': timing_db_info.channel_id,
-                'text': message
+        message = [
+                {
+                    "type": "header",
+                    "text": {
+                        "type": "plain_text",
+                        "text": "추천 종목 - " + notify_sell_summary['analysis_date'].values[0]
+                    }
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "text": "[매수 추천 종목]",
+                        "type": "mrkdwn"
+                    },
+                    "fields": [
+                        {
+                            "type": "mrkdwn",
+                            "text": "*종목명*"
+                        },
+                        {
+                            "type": "mrkdwn",
+                            "text": "*매수의견*"
+                        },
+                    ]
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "text": "[매도 추천 종목]",
+                        "type": "mrkdwn"
+                    },
+                    "fields": [
+                        {
+                            "type": "mrkdwn",
+                            "text": "*종목명*"
+                        },
+                        {
+                            "type": "mrkdwn",
+                            "text": "*매도의견*"
+                        },
+                    ]
                 }
+            ]
 
-        URL = "https://slack.com/api/chat.postMessage"
-        res = requests.post(URL, data=data)
-        print(res)
+        if len(notify_buy_summary) == 0:
+            message[1]["fields"].append({
+                "type": "plain_text",
+                "text": "없음"
+            })
+            message[1]["fields"].append({
+                "type": "plain_text",
+                "text": "없음"
+            })
+        else:
+            for row in notify_buy_summary.itertuples():
+                message[1]["fields"].append({
+                                "type": "plain_text",
+                                "text": f"[{row[2]}] {row[4]}({str(row[3])})"
+                            })
+                message[1]["fields"].append({
+                                "type": "plain_text",
+                                "text": str(row[5])
+                            })
+
+        if len(notify_sell_summary) == 0:
+            message[2]["fields"].append({
+                "type": "plain_text",
+                "text": "없음"
+            })
+            message[2]["fields"].append({
+                "type": "plain_text",
+                "text": "없음"
+            })
+        else:
+            for row in notify_sell_summary.itertuples():
+
+                message[2]["fields"].append({
+                                "type": "plain_text",
+                                "text": f"[{row[2]}] {row[4]}({str(row[3])})"
+                            })
+                message[2]["fields"].append({
+                                "type": "plain_text",
+                                "text": str(row[5])
+                            })
+
+        print(message)
+
+        client = WebClient(token=timing_db_info.slack_token)
+
+        try:
+            response = client.chat_postMessage(
+                channel=timing_db_info.channel_name,
+                blocks=json.dumps(message))
+            print(response)
+            assert response["ok"] == True
+        except SlackApiError as e:
+            # You will get a SlackApiError if "ok" is False
+            assert e.response["ok"] is False
+            assert e.response["error"]  # str like 'invalid_auth', 'channel_not_found'
+            print(f"Got an error: {e.response['error']}")
 
 
 if __name__ == '__main__':

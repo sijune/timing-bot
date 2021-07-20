@@ -17,3 +17,4 @@ class DBNotifyKR(Worker):
   def run(self):
     tdn = TimingDayNotify.TimingDayNotify('KR')
     tdn.notify_user()
+
