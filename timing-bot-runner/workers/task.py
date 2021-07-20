@@ -3,7 +3,7 @@ import TimingDBUpdater
 import TimingDayAnalysis
 import TimingDayNotify
 
-class DBUpdate(Worker):
+class DBUpdateKR(Worker):
   def run(self):
     tuk = TimingDBUpdater.TimingDBUpdater('KR')
     tuk.execute_daily()
