@@ -1,0 +1,6 @@
+timing-bot-runner/workers/timing_db_info.py
+venv/
+.idea
+logs/
+config/
+temp/
