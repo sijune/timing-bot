@@ -1,4 +1,4 @@
-# Timing Bot 서비
+# Timing Bot 서비스
 ### 일 주가 및 거래량 기반 종목 추천봇
 * 일 기준
     * 매일 국내장 마감 후 종가 기준 DB(PRICE_DAY) 업데이트 
