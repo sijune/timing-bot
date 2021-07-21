@@ -26,8 +26,8 @@ class TimingDayNotify:
         self.market_loc_cd = market_loc_cd
 
     def notify_user(self):
-        # nowDate = datetime.now().date().strftime("%Y-%m-%d")
-        nowDate = '2021-07-19'
+        nowDate = datetime.now().date().strftime("%Y-%m-%d")
+        # nowDate = '2021-07-19'
         nowDate_7 = (datetime.now().date() - timedelta(days=7)).strftime('%Y-%m-%d')
 
         sql = f"""
