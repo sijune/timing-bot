@@ -18,6 +18,10 @@
   * Finance Data Reader
   * Pandas
   * SqlAlchemy(Python ORM 지원)
+  
+### 배치종료 후 슬랙 봇을 통한 알림 메세지
+![img.png](img.png)
+
 ---
 ### 2021.04.20
 * readme 작성
@@ -36,8 +40,3 @@
 ### 2021.07.20
 * 배치 서비스를 봇 서비스로 전환
 * 슬랙 봇 생성 및 연결 완료
-
-----
-### 배치종료 후 슬랙 봇을 통한 알림 메세지
-
-![img.png](img.png)
