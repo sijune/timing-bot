@@ -2,6 +2,5 @@ timing-bot-runner/workers/timing_info.py
 venv/
 .idea
 logs/
-config/
 temp/
 configKR.json
