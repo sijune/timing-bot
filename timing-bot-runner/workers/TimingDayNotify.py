@@ -6,7 +6,7 @@ import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning) # 버전차이 무시
 
 import pandas as pd
-import timing_db_info
+import timing_info
 from sqlalchemy import create_engine
 from datetime import datetime
 from datetime import timedelta
@@ -20,7 +20,7 @@ class TimingDayNotify:
 
     def __init__(self, market_loc_cd):
         self.engine = create_engine(
-            f'mysql+pymysql://{timing_db_info.user}:{timing_db_info.passwd}@{timing_db_info.db_url}/{timing_db_info.db_name}')
+            f'mysql+pymysql://{timing_info.user}:{timing_info.passwd}@{timing_info.db_url}/{timing_info.db_name}')
 
         #  MARKET_LOC_CD는 crontab 분할을 위해 사용
         self.market_loc_cd = market_loc_cd
@@ -160,11 +160,11 @@ class TimingDayNotify:
 
         print(message)
 
-        client = WebClient(token=timing_db_info.slack_token)
+        client = WebClient(token=timing_info.slack_token)
 
         try:
             response = client.chat_postMessage(
-                channel=timing_db_info.channel_name,
+                channel=timing_info.channel_name,
                 blocks=json.dumps(message))
             print(response)
             assert response["ok"] == True

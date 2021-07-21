@@ -1,4 +1,4 @@
-timing-bot-runner/workers/timing_db_info.py
+timing-bot-runner/workers/timing_info.py
 venv/
 .idea
 logs/

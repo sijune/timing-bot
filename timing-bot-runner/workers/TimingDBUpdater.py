@@ -7,7 +7,7 @@ import pandas as pd
 from datetime import datetime
 from datetime import timedelta
 import json
-import timing_db_info
+import timing_info
 import FinanceDataReader as fdr
 from sqlalchemy import create_engine
 import sqlalchemy
@@ -22,10 +22,10 @@ class TimingDBUpdater:
             PRICE_DAY : 일자별 주가시세 데이터
             --------------------------------------
         """
-        self.conn = pymysql.connect(host=timing_db_info.db_url, user=timing_db_info.user, passwd=timing_db_info.passwd,
-                                    db=timing_db_info.db_name)
+        self.conn = pymysql.connect(host=timing_info.db_url, user=timing_info.user, passwd=timing_info.passwd,
+                                    db=timing_info.db_name)
         self.engine = create_engine(
-            f'mysql+pymysql://{timing_db_info.user}:{timing_db_info.passwd}@{timing_db_info.db_url}/{timing_db_info.db_name}')  # ORM
+            f'mysql+pymysql://{timing_info.user}:{timing_info.passwd}@{timing_info.db_url}/{timing_info.db_name}')  # ORM
 
         self.market_loc_cd = market_loc_cd
 

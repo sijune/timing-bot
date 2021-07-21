@@ -10,7 +10,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)  # 버전차이 �
 import pandas as pd
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-import timing_db_info
+import timing_info
 from sqlalchemy import create_engine
 import sqlalchemy
 from Analysis import Analysis
@@ -24,7 +24,7 @@ class TimingDayAnalysis:
 
     def __init__(self, market_loc_cd):
         self.engine = create_engine(
-            f'mysql+pymysql://{timing_db_info.user}:{timing_db_info.passwd}@{timing_db_info.db_url}/{timing_db_info.db_name}')
+            f'mysql+pymysql://{timing_info.user}:{timing_info.passwd}@{timing_info.db_url}/{timing_info.db_name}')
 
         with self.engine.connect() as connection:
             sql = """

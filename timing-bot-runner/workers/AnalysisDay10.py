@@ -5,13 +5,13 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import create_engine
 import sqlalchemy
-import timing_db_info
+import timing_info
 
 
 class AnalysisDay10:
     def __init__(self, df_input, analysis_period, trade_cls_cd, market_cd, stock_cd):
         self.engine = create_engine(
-            f'mysql+pymysql://{timing_db_info.user}:{timing_db_info.passwd}@{timing_db_info.db_url}/{timing_db_info.db_name}')
+            f'mysql+pymysql://{timing_info.user}:{timing_info.passwd}@{timing_info.db_url}/{timing_info.db_name}')
 
         # 1. 변수 초기화
         cal_from_date = (datetime.now().date() - relativedelta(months=analysis_period)).strftime('%Y-%m-%d')
