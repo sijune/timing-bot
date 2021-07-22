@@ -26,8 +26,8 @@ class TimingDayNotify:
         self.market_loc_cd = market_loc_cd
 
     def notify_user(self):
-        nowDate = datetime.now().date().strftime("%Y-%m-%d")
-        # nowDate = '2021-07-19'
+        # nowDate = datetime.now().date().strftime("%Y-%m-%d")
+        nowDate = '2021-07-22'
         nowDate_7 = (datetime.now().date() - timedelta(days=7)).strftime('%Y-%m-%d')
 
         sql = f"""
@@ -71,94 +71,72 @@ class TimingDayNotify:
                 """
 
         notify_sell_summary = pd.read_sql(sql, con=self.engine)
-       #  print("매도 요약: ",notify_sell_summary)
+        print("매도 요약: ",notify_sell_summary)
 
         message = [
                 {
                     "type": "header",
                     "text": {
                         "type": "plain_text",
-                        "text": "추천 종목 - " + notify_sell_summary['analysis_date'].values[0]
+                        "text": "추천 종목 - " + str(nowDate)
                     }
                 },
                 {
                     "type": "section",
                     "text": {
-                        "text": "[매수 추천 종목]",
+                        "text": "*매수 추천 종목*",
                         "type": "mrkdwn"
-                    },
-                    "fields": [
-                        {
-                            "type": "mrkdwn",
-                            "text": "*종목명*"
-                        },
-                        {
-                            "type": "mrkdwn",
-                            "text": "*매수의견*"
-                        },
-                    ]
+                    }
                 },
                 {
                     "type": "section",
                     "text": {
-                        "text": "[매도 추천 종목]",
+                        "text": "",
                         "type": "mrkdwn"
-                    },
-                    "fields": [
-                        {
-                            "type": "mrkdwn",
-                            "text": "*종목명*"
-                        },
-                        {
-                            "type": "mrkdwn",
-                            "text": "*매도의견*"
-                        },
-                    ]
+                    }
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "text": "*매도 추천 종목*",
+                        "type": "mrkdwn"
+                    }
+                },
+                {
+                    "type": "section",
+                    "text": {
+                        "text": "",
+                        "type": "mrkdwn"
+                    }
                 }
             ]
 
+        temp_buy_sum = []
         if len(notify_buy_summary) == 0:
-            message[1]["fields"].append({
-                "type": "plain_text",
-                "text": "없음"
-            })
-            message[1]["fields"].append({
-                "type": "plain_text",
-                "text": "없음"
-            })
+            nothing = "없음"
+            temp_buy_sum.append(f"{nothing:<10}{nothing:<10}\n")
         else:
             for row in notify_buy_summary.itertuples():
-                message[1]["fields"].append({
-                                "type": "plain_text",
-                                "text": f"[{row[2]}] {row[4]}({str(row[3])})"
-                            })
-                message[1]["fields"].append({
-                                "type": "plain_text",
-                                "text": str(row[5])
-                            })
+                buy_stock = f"[{row[2]}] {row[4]}({str(row[3])})"
+                link_buy_stock = f"<https://finance.naver.com/item/main.nhn?code={str(row[3])}|{buy_stock}>"
+                buy_opinion = str(row[5])
+                temp_buy_sum.append(f"{link_buy_stock} *[{buy_opinion}]*\n")
+        message[2]["text"]["text"] += ''.join(temp_buy_sum)
 
+        temp_sell_sum = []
         if len(notify_sell_summary) == 0:
-            message[2]["fields"].append({
-                "type": "plain_text",
-                "text": "없음"
-            })
-            message[2]["fields"].append({
-                "type": "plain_text",
-                "text": "없음"
-            })
+            nothing = "없음"
+            temp_sell_sum.append(f"{nothing:<10}{nothing:<10}\n")
         else:
             for row in notify_sell_summary.itertuples():
-
-                message[2]["fields"].append({
-                                "type": "plain_text",
-                                "text": f"[{row[2]}] {row[4]}({str(row[3])})"
-                            })
-                message[2]["fields"].append({
-                                "type": "plain_text",
-                                "text": str(row[5])
-                            })
+                sell_stock = f"[{row[2]}] {row[4]}({str(row[3])})"
+                link_sell_stock = f"<https://finance.naver.com/item/main.nhn?code={str(row[3])}|{sell_stock}>"
+                sell_opinion = str(row[5])
+                temp_sell_sum.append(f"{link_sell_stock} *[{sell_opinion}]*\n")
+        message[4]["text"]["text"] += ''.join(temp_sell_sum)
 
         print(message)
+
 
         client = WebClient(token=timing_info.slack_token)
 
@@ -173,6 +151,7 @@ class TimingDayNotify:
             assert e.response["ok"] is False
             assert e.response["error"]  # str like 'invalid_auth', 'channel_not_found'
             print(f"Got an error: {e.response['error']}")
+            print(e)
 
 
 if __name__ == '__main__':
